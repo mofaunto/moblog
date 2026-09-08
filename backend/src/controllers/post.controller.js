@@ -18,7 +18,7 @@ const getAllPosts = async (req, res) => {
       where,
       include: {
         author: {
-          select: { id: true, name: true, email: true }
+          select: { id: true, ism: true, email: true }
         }
       },
       orderBy
