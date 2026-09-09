@@ -1,17 +1,31 @@
-import { BrowserRouter, Routes, Route } from 'react-router';
-import { Toaster } from 'sonner';
+import { BrowserRouter, Routes, Route, Outlet } from 'react-router';
+import Navbar from './components/Navbar';
+import Footer from './components/Footer';
 import Home from './pages/Home';
 import TalabaDetail from './pages/TalabaDetail';
 import PostDetail from './pages/PostDetail';
 
+function Layout() {
+  return (
+    <div className="min-h-screen flex flex-col bg-gray-50">
+      <Navbar />
+      <main className="flex-1 container mx-auto px-4 py-8">
+        <Outlet />
+      </main>
+      <Footer />
+    </div>
+  );
+}
+
 function App() {
   return (
     <BrowserRouter>
-      <Toaster position="top-right" richColors />
       <Routes>
-        <Route path="/" element={<Home />} />
-        <Route path="/talaba/:id" element={<TalabaDetail />} />
-        <Route path="/posts/:id" element={<PostDetail />} />
+        <Route element={<Layout />}>
+          <Route path="/" element={<Home />} />
+          <Route path="/talaba/:id" element={<TalabaDetail />} />
+          <Route path="/posts/:id" element={<PostDetail />} />
+        </Route>
       </Routes>
     </BrowserRouter>
   );

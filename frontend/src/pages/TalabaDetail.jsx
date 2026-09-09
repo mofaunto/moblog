@@ -25,46 +25,55 @@ function TalabaDetail() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <p className="text-gray-500">Yuklanmoqda...</p>
+      <div className="flex items-center justify-center py-20">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
       </div>
     );
   }
 
   if (!talaba) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+      <div className="text-center py-20">
         <p className="text-gray-500">Talaba topilmadi</p>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 p-6">
-      <Link to="/" className="text-blue-600 hover:underline">← Orqaga</Link>
-      <div className="max-w-2xl mx-auto mt-6 bg-white rounded-xl shadow p-6">
-        <h1 className="text-2xl font-bold text-gray-900">{talaba.ism}</h1>
-        <p className="text-gray-600 mt-2">{talaba.email}</p>
-        {talaba.posts && (
-          <div className="mt-6">
-            <h2 className="text-xl font-semibold text-gray-800 mb-3">Postlari</h2>
-            {talaba.posts.length === 0 ? (
-              <p className="text-gray-500">Postlar yo'q</p>
-            ) : (
-              <div className="space-y-2">
-                {talaba.posts.map((post) => (
-                  <Link
-                    key={post.id}
-                    to={`/posts/${post.id}`}
-                    className="block border rounded-lg p-3 hover:bg-gray-50 transition"
-                  >
-                    {post.title}
-                  </Link>
-                ))}
-              </div>
-            )}
+    <div className="max-w-3xl mx-auto">
+      <Link to="/" className="inline-flex items-center gap-2 text-blue-600 hover:text-blue-700 mb-6">
+        ← Orqaga
+      </Link>
+      <div className="bg-white rounded-2xl shadow-lg overflow-hidden">
+        <div className="bg-linear-to-r from-blue-500 to-purple-600 h-32"></div>
+        <div className="px-6 pb-6 -mt-12">
+          <div className="w-24 h-24 rounded-full border-4 border-white bg-linear-to-r from-blue-400 to-purple-500 flex items-center justify-center text-white text-4xl font-bold mx-auto">
+            {talaba.ism.charAt(0).toUpperCase()}
           </div>
-        )}
+          <div className="text-center mt-4">
+            <h1 className="text-2xl font-bold text-gray-900">{talaba.ism}</h1>
+            <p className="text-gray-600">{talaba.email}</p>
+          </div>
+        </div>
+        <div className="border-t border-gray-100 px-6 py-5">
+          <h2 className="text-xl font-semibold text-gray-800 mb-4">Postlari ({talaba.posts?.length || 0})</h2>
+          {talaba.posts && talaba.posts.length > 0 ? (
+            <div className="space-y-3">
+              {talaba.posts.map((post) => (
+                <Link
+                  key={post.id}
+                  to={`/posts/${post.id}`}
+                  className="block bg-gray-50 rounded-xl p-4 hover:bg-gray-100 transition"
+                >
+                  <h3 className="font-medium text-gray-900">{post.title}</h3>
+                  <p className="text-sm text-gray-500 mt-1">{post.content?.substring(0, 100)}...</p>
+                </Link>
+              ))}
+            </div>
+          ) : (
+            <p className="text-gray-500">Hozircha postlar yo'q</p>
+          )}
+        </div>
       </div>
     </div>
   );
