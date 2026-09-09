@@ -34,12 +34,9 @@ const getUserById = async (req, res) => {
 
 const createUser = async (req, res) => {
   try {
-    const { name, email, password } = req.body;
-    if (!name || !email || !password) {
-      return res.status(400).json({ success: false, error: 'Barcha maydonlar kerak' });
-    }
+    const { ism, email, password } = req.body;
     const user = await prisma.talaba.create({
-      data: { name, email, password }
+      data: { ism, email, password }
     });
     res.status(201).json({ success: true, data: user });
   } catch (err) {

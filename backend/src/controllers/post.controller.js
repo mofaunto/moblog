@@ -45,13 +45,9 @@ const getPostById = async (req, res) => {
   }
 };
 
-// Yangi post
 const createPost = async (req, res) => {
   try {
     const { title, content, authorId, published } = req.body;
-    if (!title || !content || !authorId) {
-      return res.status(400).json({ success: false, error: 'Title, content va authorId kerak' });
-    }
     const post = await prisma.post.create({
       data: {
         title,
