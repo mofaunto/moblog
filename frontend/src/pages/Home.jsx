@@ -2,36 +2,51 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router';
 import { getTalabalar } from '../api/talabalar';
 import { getPosts } from '../api/posts';
-import { toast } from 'sonner';
+import Modal from '../components/Modal';
+import TalabaForm from '../components/TalabaForm';
+import PostForm from '../components/PostForm';
 
 function Home() {
   const [talabalar, setTalabalar] = useState([]);
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
 
+  const [talabaModalOpen, setTalabaModalOpen] = useState(false);
+  const [postModalOpen, setPostModalOpen] = useState(false);
+
+  const loadData = async () => {
+    try {
+      const [talabaData, postData] = await Promise.all([
+        getTalabalar(),
+        getPosts(),
+      ]);
+      setTalabalar(talabaData);
+      setPosts(postData);
+    } catch (err) {
+      console.error("Xatolik yuz berdi", err)
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
-    const loadData = async () => {
-      try {
-        const [talabaData, postData] = await Promise.all([
-          getTalabalar(),
-          getPosts(),
-        ]);
-        setTalabalar(talabaData);
-        setPosts(postData);
-      } catch (err) {
-        console.error("Xato", err)
-        toast.error("Xatolik yuz berdi")
-      } finally {
-        setLoading(false);
-      }
-    };
     loadData();
   }, []);
+
+  const handleTalabaCreated = () => {
+    setTalabaModalOpen(false);
+    loadData();
+  };
+
+  const handlePostCreated = () => {
+    setPostModalOpen(false);
+    loadData();
+  };
 
   if (loading) {
     return (
       <div className="flex items-center justify-center py-20">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+        <span className="loading loading-spinner loading-lg text-primary"></span>
       </div>
     );
   }
@@ -50,9 +65,18 @@ function Home() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         <section className="lg:col-span-1">
           <div className="bg-white rounded-2xl shadow-md p-6">
-            <h2 className="text-2xl font-bold text-gray-900 mb-6 flex items-center gap-2">
-              <div className="w-8 h-8 bg-gray-500 rounded-3xl"></div> Talabalar
-            </h2>
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
+                <div className="w-8 h-8 bg-gray-500 rounded-3xl"></div> Talabalar
+              </h2>
+              <button
+                className="btn btn-primary btn-sm"
+                onClick={() => setTalabaModalOpen(true)}
+              >
+                + Talaba
+              </button>
+            </div>
+
             <div className="space-y-4">
               {talabalar.length === 0 ? (
                 <p className="text-gray-500">Talabalar yo'q</p>
@@ -80,9 +104,18 @@ function Home() {
         </section>
 
         <section className="lg:col-span-2">
-          <h2 className="text-2xl font-bold text-gray-900 mb-6 flex items-center gap-2">
-            <div className="w-8 h-8 bg-gray-500 rounded-3xl"></div> So'nggi postlar
-          </h2>
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
+              <span className="text-3xl"></span> So'nggi postlar
+            </h2>
+            <button
+              className="btn btn-secondary btn-sm"
+              onClick={() => setPostModalOpen(true)}
+            >
+              + Post
+            </button>
+          </div>
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {posts.length === 0 ? (
               <p className="text-gray-500">Postlar yo'q</p>
@@ -93,7 +126,7 @@ function Home() {
                   to={`/posts/${post.id}`}
                   className="group bg-white rounded-2xl shadow-md overflow-hidden hover:shadow-xl transition"
                 >
-                  <div className="h-40 bg-linear-to-r from-indigo-400 to-purple-500 flex items-center justify-center" />
+                  <div className="h-40 bg-linear-to-r from-indigo-400 to-purple-500 flex items-center justify-center text-white text-4xl" />
                   <div className="p-5">
                     <h3 className="font-bold text-lg text-gray-900 group-hover:text-blue-600 transition line-clamp-2">
                       {post.title}
@@ -111,6 +144,28 @@ function Home() {
           </div>
         </section>
       </div>
+
+      <Modal
+        isOpen={talabaModalOpen}
+        onClose={() => setTalabaModalOpen(false)}
+        title="Yangi talaba qo‘shish"
+      >
+        <TalabaForm
+          onSuccess={handleTalabaCreated}
+          onCancel={() => setTalabaModalOpen(false)}
+        />
+      </Modal>
+
+      <Modal
+        isOpen={postModalOpen}
+        onClose={() => setPostModalOpen(false)}
+        title="Yangi post yaratish"
+      >
+        <PostForm
+          onSuccess={handlePostCreated}
+          onCancel={() => setPostModalOpen(false)}
+        />
+      </Modal>
     </div>
   );
 }
