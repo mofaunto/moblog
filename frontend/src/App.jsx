@@ -4,6 +4,8 @@ import Footer from './components/Footer';
 import Home from './pages/Home';
 import TalabaDetail from './pages/TalabaDetail';
 import PostDetail from './pages/PostDetail';
+import Login from './pages/Login';
+import Register from './pages/Register';
 
 function Layout() {
   return (
@@ -23,6 +25,8 @@ function App() {
       <Routes>
         <Route element={<Layout />}>
           <Route path="/" element={<Home />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
           <Route path="/talaba/:id" element={<TalabaDetail />} />
           <Route path="/posts/:id" element={<PostDetail />} />
         </Route>

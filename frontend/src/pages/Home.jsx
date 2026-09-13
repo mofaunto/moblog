@@ -5,12 +5,14 @@ import { getPosts } from '../api/posts';
 import Modal from '../components/Modal';
 import TalabaForm from '../components/TalabaForm';
 import PostForm from '../components/PostForm';
+import { useAuth } from '../contexts/AuthContext';
 
 function Home() {
+  const { user } = useAuth();
+
   const [talabalar, setTalabalar] = useState([]);
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
-
   const [talabaModalOpen, setTalabaModalOpen] = useState(false);
   const [postModalOpen, setPostModalOpen] = useState(false);
 
@@ -23,15 +25,48 @@ function Home() {
       setTalabalar(talabaData);
       setPosts(postData);
     } catch (err) {
-      console.error("Xatolik yuz berdi", err)
+      console.error("Xatolik loadData bilan", err)
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    loadData();
-  }, []);
+    if (user) {
+      loadData();
+    } else {
+      setLoading(false);
+    }
+  }, [user]);
+
+  if (!user) {
+    return (
+      <div className="flex flex-col items-center justify-center py-24 text-center">
+        <h1 className="text-4xl md:text-5xl font-extrabold text-gray-900 mb-4">
+          MoBlogga Xush Kelibsiz
+        </h1>
+        <p className="text-lg text-gray-600 max-w-xl mb-8">
+          Blog platformasiga kirib, talabalar va ularning postlari bilan tanishing.
+        </p>
+        <div className="flex flex-wrap gap-4 justify-center">
+          <Link to="/login" className="btn btn-primary btn-lg">
+            Kirish
+          </Link>
+          <Link to="/register" className="btn btn-secondary btn-lg">
+            Ro‘yxatdan o‘tish
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center py-20">
+        <span className="loading loading-spinner loading-lg text-primary"></span>
+      </div>
+    );
+  }
 
   const handleTalabaCreated = () => {
     setTalabaModalOpen(false);
@@ -42,14 +77,6 @@ function Home() {
     setPostModalOpen(false);
     loadData();
   };
-
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center py-20">
-        <span className="loading loading-spinner loading-lg text-primary"></span>
-      </div>
-    );
-  }
 
   return (
     <div>
@@ -67,7 +94,7 @@ function Home() {
           <div className="bg-white rounded-2xl shadow-md p-6">
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
-                <div className="w-8 h-8 bg-gray-500 rounded-3xl"></div> Talabalar
+                <span className="text-3xl">👥</span> Talabalar
               </h2>
               <button
                 className="btn btn-primary btn-sm"
@@ -106,7 +133,7 @@ function Home() {
         <section className="lg:col-span-2">
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
-              <span className="text-3xl"></span> So'nggi postlar
+              <span className="text-3xl">📄</span> So'nggi postlar
             </h2>
             <button
               className="btn btn-secondary btn-sm"
@@ -126,7 +153,9 @@ function Home() {
                   to={`/posts/${post.id}`}
                   className="group bg-white rounded-2xl shadow-md overflow-hidden hover:shadow-xl transition"
                 >
-                  <div className="h-40 bg-linear-to-r from-indigo-400 to-purple-500 flex items-center justify-center text-white text-4xl" />
+                  <div className="h-40 bg-linear-to-r from-indigo-400 to-purple-500 flex items-center justify-center text-white text-4xl">
+                    📰
+                  </div>
                   <div className="p-5">
                     <h3 className="font-bold text-lg text-gray-900 group-hover:text-blue-600 transition line-clamp-2">
                       {post.title}
