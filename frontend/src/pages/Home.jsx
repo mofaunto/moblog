@@ -96,12 +96,16 @@ function Home() {
               <h2 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
                 <span className="text-3xl">👥</span> Talabalar
               </h2>
-              <button
-                className="btn btn-primary btn-sm"
-                onClick={() => setTalabaModalOpen(true)}
-              >
-                + Talaba
-              </button>
+              {
+                user && (
+                    <button
+                      className="btn btn-primary btn-sm"
+                      onClick={() => setTalabaModalOpen(true)}
+                    >
+                      + Talaba
+                    </button>
+                )
+              }
             </div>
 
             <div className="space-y-4">
@@ -135,12 +139,15 @@ function Home() {
             <h2 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
               <span className="text-3xl">📄</span> So'nggi postlar
             </h2>
-            <button
-              className="btn btn-secondary btn-sm"
-              onClick={() => setPostModalOpen(true)}
-            >
-              + Post
-            </button>
+            
+            {user && (
+              <button
+                className="btn btn-secondary btn-sm"
+                onClick={() => setPostModalOpen(true)}
+              >
+                + Post
+              </button>
+            )}
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

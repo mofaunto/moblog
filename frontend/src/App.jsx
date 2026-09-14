@@ -6,6 +6,7 @@ import TalabaDetail from './pages/TalabaDetail';
 import PostDetail from './pages/PostDetail';
 import Login from './pages/Login';
 import Register from './pages/Register';
+import ProtectedRoute from './components/ProtectedRoute';
 
 function Layout() {
   return (
@@ -29,6 +30,14 @@ function App() {
           <Route path="/register" element={<Register />} />
           <Route path="/talaba/:id" element={<TalabaDetail />} />
           <Route path="/posts/:id" element={<PostDetail />} />
+          <Route
+            path="/profile"
+            element={
+              <ProtectedRoute>
+                {/* <Profile /> */}
+              </ProtectedRoute>
+            }
+          />
         </Route>
       </Routes>
     </BrowserRouter>

@@ -1,29 +1,15 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { toast } from 'sonner';
 import { createPost } from '../api/posts';
-import { getTalabalar } from '../api/talabalar';
 
 function PostForm({ onSuccess, onCancel }) {
   const [form, setForm] = useState({
     title: '',
     content: '',
-    authorId: '',
     published: false,
   });
-  const [talabalar, setTalabalar] = useState([]);
-  const [fieldErrors, setFieldErrors] = useState({});
 
-  useEffect(() => {
-    const loadTalabalar = async () => {
-      try {
-        const data = await getTalabalar();
-        setTalabalar(data);
-      } catch (err) {
-        console.error("Xatolik yuz berdi", err)
-      }
-    };
-    loadTalabalar();
-  }, []);
+  const [fieldErrors, setFieldErrors] = useState({});
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -44,7 +30,6 @@ function PostForm({ onSuccess, onCancel }) {
       const payload = {
         title: form.title,
         content: form.content,
-        authorId: Number(form.authorId),
         published: form.published,
       };
       await createPost(payload);
@@ -97,30 +82,6 @@ function PostForm({ onSuccess, onCancel }) {
         {fieldErrors.content && (
           <label className="label">
             <span className="label-text-alt text-error">{fieldErrors.content}</span>
-          </label>
-        )}
-      </div>
-
-      <div className="form-control">
-        <label className="label">
-          <span className="label-text font-medium">Muallif</span>
-        </label>
-        <select
-          name="authorId"
-          value={form.authorId}
-          onChange={handleChange}
-          className={`select select-bordered w-full ${fieldErrors.authorId ? 'select-error' : ''}`}
-        >
-          <option value="">Muallifni tanlang</option>
-          {talabalar.map((talaba) => (
-            <option key={talaba.id} value={talaba.id}>
-              {talaba.ism} ({talaba.email})
-            </option>
-          ))}
-        </select>
-        {fieldErrors.authorId && (
-          <label className="label">
-            <span className="label-text-alt text-error">{fieldErrors.authorId}</span>
           </label>
         )}
       </div>
