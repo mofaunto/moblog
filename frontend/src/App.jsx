@@ -7,6 +7,7 @@ import PostDetail from './pages/PostDetail';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import ProtectedRoute from './components/ProtectedRoute';
+import Profile from './pages/Profile';
 
 function Layout() {
   return (
@@ -34,7 +35,7 @@ function App() {
             path="/profile"
             element={
               <ProtectedRoute>
-                {/* <Profile /> */}
+                <Profile />
               </ProtectedRoute>
             }
           />

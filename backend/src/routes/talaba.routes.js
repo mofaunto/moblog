@@ -6,6 +6,10 @@ const authMiddleware = require('../middlewares/auth');
 const { createTalabaSchema, updateTalabaSchema } = require('../validations/talaba.validation');
 
 router.get('/', talabaController.getAllUsers);
+
+// me ni id dan oldin yozish kerak, aks holda express me ni id deb qabul qiladi
+router.get('/me', authMiddleware, talabaController.getMe);
+
 router.get('/:id', talabaController.getUserById);
 
 router.post('/', authMiddleware, validate(createTalabaSchema), talabaController.createUser);

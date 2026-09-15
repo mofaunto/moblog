@@ -10,6 +10,11 @@ export const getTalabaById = async (id) => {
   return response.data.data;
 };
 
+export const getMe = async () => {
+  const response = await client.get('/talabalar/me');
+  return response.data.data;
+};
+
 export const createTalaba = async (talaba) => {
   const response = await client.post('/talabalar', talaba);
   return response.data.data;

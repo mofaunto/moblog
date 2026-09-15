@@ -1,4 +1,5 @@
 const prisma = require('../prisma');
+const bcrypt = require('bcryptjs');
 
 const getAllUsers = async (req, res) => {
   try {
@@ -32,13 +33,45 @@ const getUserById = async (req, res) => {
   }
 };
 
+
+const getMe = async (req, res) => {
+  try {
+    const user = await prisma.talaba.findUnique({
+      where: { id: req.user.userId },
+      include: {
+        _count: { select: { posts: true } }
+      }
+    });
+    if (!user) {
+      return res.status(404).json({ success: false, error: 'Foydalanuvchi topilmadi' });
+    }
+    const { password, ...userWithoutPassword } = user;
+    res.json({ success: true, data: userWithoutPassword });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+};
+
 const createUser = async (req, res) => {
   try {
     const { ism, email, password } = req.body;
+
+    const existing = await prisma.talaba.findUnique({ where: { email } });
+    if (existing) {
+      return res.status(400).json({
+        success: false,
+        error: 'Bu email allaqachon ro‘yxatdan o‘tgan'
+      });
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+
     const user = await prisma.talaba.create({
-      data: { ism, email, password }
+      data: { ism, email, password: hashedPassword }
     });
-    res.status(201).json({ success: true, data: user });
+
+    const { password: _, ...userWithoutPassword } = user;
+    res.status(201).json({ success: true, data: userWithoutPassword });
   } catch (err) {
     res.status(500).json({ success: false, error: err.message });
   }
@@ -47,11 +80,34 @@ const createUser = async (req, res) => {
 const updateUser = async (req, res) => {
   try {
     const id = parseInt(req.params.id);
+
+    const existing = await prisma.talaba.findUnique({ where: { id } });
+    if (!existing) {
+      return res.status(404).json({ success: false, error: 'Foydalanuvchi topilmadi' });
+    }
+
+    if (id !== req.user.userId) {
+      return res.status(403).json({
+        success: false,
+        error: 'Boshqa foydalanuvchini o‘zgartirishga ruxsatingiz yo‘q'
+      });
+    }
+
+    const data = {};
+    if (req.body.ism !== undefined) data.ism = req.body.ism;
+    if (req.body.email !== undefined) data.email = req.body.email;
+
+    if (req.body.password) {
+      data.password = await bcrypt.hash(req.body.password, 10);
+    }
+
     const user = await prisma.talaba.update({
       where: { id },
-      data: req.body
+      data
     });
-    res.json({ success: true, data: user });
+
+    const { password: _, ...userWithoutPassword } = user;
+    res.json({ success: true, data: userWithoutPassword });
   } catch (err) {
     res.status(500).json({ success: false, error: err.message });
   }
@@ -60,8 +116,21 @@ const updateUser = async (req, res) => {
 const deleteUser = async (req, res) => {
   try {
     const id = parseInt(req.params.id);
+
+    const existing = await prisma.talaba.findUnique({ where: { id } });
+    if (!existing) {
+      return res.status(404).json({ success: false, error: 'Foydalanuvchi topilmadi' });
+    }
+
+    if (id !== req.user.userId) {
+      return res.status(403).json({
+        success: false,
+        error: 'Boshqa foydalanuvchini o‘chirishga ruxsatingiz yo‘q'
+      });
+    }
+
     await prisma.talaba.delete({ where: { id } });
-    res.json({ success: true, data: { message: 'Foydalanuvchi o\'chirildi' } });
+    res.json({ success: true, data: { message: 'Foydalanuvchi o‘chirildi' } });
   } catch (err) {
     res.status(500).json({ success: false, error: err.message });
   }
@@ -70,6 +139,7 @@ const deleteUser = async (req, res) => {
 module.exports = {
   getAllUsers,
   getUserById,
+  getMe,
   createUser,
   updateUser,
   deleteUser

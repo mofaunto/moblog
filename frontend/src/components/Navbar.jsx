@@ -23,12 +23,12 @@ function Navbar() {
 
           {user ? (
             <>
-              <div className="flex items-center gap-2">
+              <Link to="/profile" className="flex items-center gap-2 hover:opacity-80 transition">
                 <div className="w-8 h-8 rounded-full bg-linear-to-br from-blue-400 to-purple-500 flex items-center justify-center text-white font-bold text-sm">
                   {user.ism?.charAt(0).toUpperCase()}
                 </div>
                 <span className="hidden sm:inline text-gray-800 font-medium">{user.ism}</span>
-              </div>
+              </Link>
               <button className="btn btn-outline btn-sm" onClick={handleLogout}>
                 Chiqish
               </button>
