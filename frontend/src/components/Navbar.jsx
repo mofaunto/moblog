@@ -1,6 +1,7 @@
 import { Link, useNavigate } from 'react-router';
 import { toast } from 'sonner';
 import { useAuth } from '../contexts/AuthContext';
+import { getImageUrl } from '../utils/imageUrl';
 
 function Navbar() {
   const { user, logoutUser } = useAuth();
@@ -11,6 +12,8 @@ function Navbar() {
     toast.success('Tizimdan chiqdingiz');
     navigate('/');
   };
+
+  const avatarUrl = getImageUrl(user?.avatar);
 
   return (
     <header className="bg-white border-b border-gray-200 sticky top-0 z-50">
@@ -25,7 +28,15 @@ function Navbar() {
             <>
               <Link to="/profile" className="flex items-center gap-2 hover:opacity-80 transition">
                 <div className="w-8 h-8 rounded-full bg-linear-to-br from-blue-400 to-purple-500 flex items-center justify-center text-white font-bold text-sm">
-                  {user.ism?.charAt(0).toUpperCase()}
+                  {avatarUrl ? (
+                    <img
+                      src={avatarUrl}
+                      alt={user.ism}
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    user.ism?.charAt(0).toUpperCase()
+                  )}
                 </div>
                 <span className="hidden sm:inline text-gray-800 font-medium">{user.ism}</span>
               </Link>

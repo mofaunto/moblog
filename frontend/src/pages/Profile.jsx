@@ -1,7 +1,12 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { toast } from 'sonner';
 import { getMe, updateTalaba } from '../api/talabalar';
+import client from '../api/client';
 import { useAuth } from '../contexts/AuthContext';
+import { getImageUrl } from '../utils/imageUrl';
+
+const MAX_FILE_SIZE = 2 * 1024 * 1024; // 2 MB
+const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
 
 function Profile() {
   const { user, updateUser } = useAuth();
@@ -11,6 +16,9 @@ function Profile() {
   const [generalError, setGeneralError] = useState('');
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [uploadingAvatar, setUploadingAvatar] = useState(false);
+
+  const fileInputRef = useRef(null);
 
   useEffect(() => {
     const loadProfile = async () => {
@@ -18,7 +26,7 @@ function Profile() {
         const data = await getMe();
         setForm({ ism: data.ism, email: data.email, password: '' });
       } catch (err) {
-        console.error("Xatolik yuz berdi", err)
+        console.error("Xatolik", err)
       } finally {
         setLoading(false);
       }
@@ -48,7 +56,7 @@ function Profile() {
       }
 
       const updated = await updateTalaba(user.id, payload);
-      updateUser(updated);
+      updateUser({ ...user, ...updated });
       toast.success('Profil muvaffaqiyatli yangilandi');
       setForm((prev) => ({ ...prev, password: '' }));
     } catch (err) {
@@ -66,6 +74,42 @@ function Profile() {
     }
   };
 
+  const handleAvatarClick = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleAvatarUpload = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!ALLOWED_TYPES.includes(file.type)) {
+      toast.error('Faqat JPEG, PNG yoki WEBP rasmlarni yuklash mumkin');
+      e.target.value = '';
+      return;
+    }
+    if (file.size > MAX_FILE_SIZE) {
+      toast.error('Rasm hajmi 2 MB dan oshmasligi kerak');
+      e.target.value = '';
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append('avatar', file);
+
+    setUploadingAvatar(true);
+    try {
+      const res = await client.post('/talabalar/me/avatar', formData);
+      const updatedUser = res.data.data.user;
+      updateUser(updatedUser);
+      toast.success('Avatar muvaffaqiyatli yangilandi');
+    } catch (err) {
+      toast.error(err.message);
+    } finally {
+      setUploadingAvatar(false);
+      if (fileInputRef.current) fileInputRef.current.value = '';
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center py-20">
@@ -74,18 +118,60 @@ function Profile() {
     );
   }
 
+  const avatarUrl = getImageUrl(user?.avatar);
+
   return (
     <div className="max-w-2xl mx-auto">
       <div className="bg-white rounded-2xl shadow-lg overflow-hidden">
         <div className="bg-linear-to-r from-blue-500 to-purple-600 h-32"></div>
 
         <div className="px-6 -mt-12 mb-6">
-          <div className="w-24 h-24 rounded-full border-4 border-white bg-linear-to-br from-blue-400 to-purple-500 flex items-center justify-center text-white text-4xl font-bold mx-auto">
-            {user?.ism?.charAt(0).toUpperCase() || '?'}
-          </div>
-          <div className="text-center mt-4">
-            <h1 className="text-2xl font-bold text-gray-900">{user?.ism}</h1>
-            <p className="text-gray-600">{user?.email}</p>
+          <div className="flex flex-col items-center">
+            <div className="relative">
+              <div className="w-24 h-24 rounded-full border-4 border-white bg-linear-to-br from-blue-400 to-purple-500 flex items-center justify-center text-white text-4xl font-bold overflow-hidden">
+                {avatarUrl ? (
+                  <img
+                    src={avatarUrl}
+                    alt={user?.ism}
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  user?.ism?.charAt(0).toUpperCase() || '?'
+                )}
+              </div>
+
+              {uploadingAvatar && (
+                <div className="absolute inset-0 rounded-full bg-black/40 flex items-center justify-center">
+                  <span className="loading loading-spinner loading-sm text-white"></span>
+                </div>
+              )}
+
+              <button
+                type="button"
+                onClick={handleAvatarClick}
+                disabled={uploadingAvatar}
+                className="absolute bottom-0 right-0 btn btn-circle btn-primary btn-sm border-2 border-white"
+                title="Avatar yuklash"
+              >
+                +
+              </button>
+            </div>
+
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/jpeg,image/png,image/webp"
+              onChange={handleAvatarUpload}
+              className="hidden"
+            />
+
+            <div className="text-center mt-4">
+              <h1 className="text-2xl font-bold text-gray-900">{user?.ism}</h1>
+              <p className="text-gray-600">{user?.email}</p>
+              <p className="text-xs text-gray-400 mt-1">
+                Rasm: max 2 MB, JPEG / PNG / WEBP
+              </p>
+            </div>
           </div>
         </div>
 
@@ -157,11 +243,7 @@ function Profile() {
             )}
 
             <div className="flex justify-end gap-2 pt-2">
-              <button
-                type="submit"
-                className="btn btn-primary"
-                disabled={saving}
-              >
+              <button type="submit" className="btn btn-primary" disabled={saving}>
                 {saving ? (
                   <>
                     <span className="loading loading-spinner loading-sm"></span>

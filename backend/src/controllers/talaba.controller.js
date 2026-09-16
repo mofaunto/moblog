@@ -136,11 +136,42 @@ const deleteUser = async (req, res) => {
   }
 };
 
+const uploadAvatar = async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({
+        success: false,
+        error: 'Fayl yuklanmadi'
+      });
+    }
+
+    const avatarPath = `/uploads/${req.file.filename}`;
+
+    const user = await prisma.talaba.update({
+      where: { id: req.user.userId },
+      data: { avatar: avatarPath }
+    });
+
+    const { password: _, ...userWithoutPassword } = user;
+
+    res.json({
+      success: true,
+      data: {
+        user: userWithoutPassword,
+        avatar: avatarPath
+      }
+    });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+};
+
 module.exports = {
   getAllUsers,
   getUserById,
   getMe,
   createUser,
   updateUser,
-  deleteUser
+  deleteUser,
+  uploadAvatar
 };
